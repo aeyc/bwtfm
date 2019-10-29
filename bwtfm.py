@@ -100,6 +100,7 @@ def index(textFile):
     f.write(str(suffixArray))
     f.write("\n")
     f.write("\nOCC\n")
+
     for i in range(0,len(bwt_str)+1):
         for j in range(0, len(chars)+1):
             tmp = str(occ[i][j])+" "
@@ -125,11 +126,11 @@ def search(textFile,patternFile):
     bwt = open(bwt,"r")
     bwt = bwt.read()
 
-    indexTable = [[None for i in range(2)]  for j in range(0,len(bwt)-1)]
+    indexTable = [[None for i in range(2)]  for j in range(0,len(bwt))]
     i = 0
     with open(fm) as fp:
         line = fp.readline()
-        cnt = 1
+        cnt = 0
         while line != "First Column":
             if cnt == len(bwt):
                 break
@@ -139,7 +140,45 @@ def search(textFile,patternFile):
             i+=1
             cnt += 1
             line = fp.readline()
-
+    
+    ### fm tables: cnt
+    cnt = dict()
+    cnt = {}
+    chars = ""
+    for i in bwt:
+        if not i in cnt:
+            cnt[i] = 1
+            chars += i
+        else:
+            cnt[i] += 1
+    chars = sorted(chars)
+    
+    ### fm tables: rank
+    rank = {}
+    i = 0
+    for j in chars:
+        rank[j] = i
+        i += cnt[j]
+    
+    ### fm tables: occ
+    occ = np.zeros((len(bwt)+1,len(cnt)+1), dtype=object)
+    for i in range(0,len(chars)):
+        occ[0][i+1] = chars[i]
+    for i in range(0,len(bwt)):
+        occ[i+1][0] = bwt[i]
+    
+    
+    for i in range(1,len(bwt)+1):
+        for j in range(1, len(chars)+1):
+            if occ[i][0] == occ[0][j] and i>1:
+                occ[i,j] = occ[i-1][j] +1 
+            elif occ[i][0] == occ[0][j] and i==1:
+                occ[i,j] = 1
+            elif occ[i][0] != occ[0][j] and i>1:
+                occ[i,j] = occ[i-1][j]
+    print("rank", rank)
+    print("cnt", cnt)
+    print("occ", occ)
     print(indexTable)
 
 index("myText.fa")
