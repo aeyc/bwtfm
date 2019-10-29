@@ -1,14 +1,15 @@
-$0
-A3
-A5
-A8
+$12
+A9
+A7
+A4
+A1
 C6
-C9
-C2
-G4
-G7
-G10
-T1
+C3
+C10
+G8
+G5
+G2
+T11
 First Column$AAAACCCGGGT
 ['$', 'T$', 'CT$', 'ACT$', 'GACT$', 'AGACT$', 'CAGACT$', 'GCAGACT$', 'AGCAGACT$', 'CAGCAGACT$', 'GCAGCAGACT$', 'AGCAGCAGACT$']
 

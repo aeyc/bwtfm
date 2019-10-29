@@ -31,9 +31,10 @@ def index(textFile):
     suffixDct = {}
     hashing = ""
 
-    for i in range(0,len(suffixArray)-1):
+    for i in range(0,len(suffixArray)):
         prep1[i] = prep1[i] + text[0:len(text)-i-1]
-        suffixDct1[prep1[i]] = i
+        suffixDct1[prep1[i]] = len(text) - i
+
     prep1.sort()
     keys = sorted(suffixDct1.keys())
     for i in keys:
@@ -124,9 +125,6 @@ def search(textFile,patternFile):
     bwt = open(bwt,"r")
     bwt = bwt.read()
 
-#    fm = open(fm,"r")
-#    
-#    fm = fm.read()
     indexTable = [[None for i in range(2)]  for j in range(0,len(bwt)-1)]
     i = 0
     with open(fm) as fp:
