@@ -14,13 +14,54 @@ output:
     a file with fm index table = myText.fa.fm
 """
 import numpy as np
+##FM Table -- Count
+def Cnt(bwt_str):
+    cnt = dict()
+    cnt = {}
+    chars = ""
+    for i in bwt_str:
+        if not i in cnt:
+            cnt[i] = 1
+            chars += i
+        else:
+            cnt[i] += 1
+    chars = sorted(chars)
+    return cnt, chars
 
+##FM Table -- Rank
+def Rank(bwt_str,chars,cnt):
+    ### fm tables: rank
+    rank = {}
+    i = 0
+    for j in chars:
+        rank[j] = i
+        i += cnt[j]
+    return rank
+
+##FM Table -- Occurancy
+def Occ(bwt_str,chars,cnt):
+    occ = np.zeros((len(bwt_str)+1,len(cnt)+1), dtype=object)
+    for i in range(0,len(chars)):
+        occ[0][i+1] = chars[i]
+    for i in range(0,len(bwt_str)):
+        occ[i+1][0] = bwt_str[i]
+    
+    
+    for i in range(1,len(bwt_str)+1):
+        for j in range(1, len(chars)+1):
+            if occ[i][0] == occ[0][j] and i>1:
+                occ[i,j] = occ[i-1][j] +1 
+            elif occ[i][0] == occ[0][j] and i==1:
+                occ[i,j] = 1
+            elif occ[i][0] != occ[0][j] and i>1:
+                occ[i,j] = occ[i-1][j]
+    return occ
 #%% index method
 def index(textFile):
     text = open(textFile, "r") 
     text = text.read()
     text = text.replace("\n","")
-    
+
     text=text+'$'   #endchar
     ### Suffix Array
     suffixArray = [text[-i:] for i in range(1,len(text)+1)]
@@ -49,41 +90,11 @@ def index(textFile):
     for i in range(0,len(prep1)):
         firstColumn = firstColumn + (prep1[i])[0]
     
-    ### fm tables: cnt
-    cnt = dict()
-    cnt = {}
-    chars = ""
-    for i in prep1[0]:
-        if not i in cnt:
-            cnt[i] = 1
-            chars += i
-        else:
-            cnt[i] += 1
-    chars = sorted(chars)
-    
-    ### fm tables: rank
-    rank = {}
-    i = 0
-    for j in chars:
-        rank[j] = i
-        i += cnt[j]
-    
-    ### fm tables: occ
-    occ = np.zeros((len(bwt_str)+1,len(cnt)+1), dtype=object)
-    for i in range(0,len(chars)):
-        occ[0][i+1] = chars[i]
-    for i in range(0,len(bwt_str)):
-        occ[i+1][0] = bwt_str[i]
-    
-    
-    for i in range(1,len(bwt_str)+1):
-        for j in range(1, len(chars)+1):
-            if occ[i][0] == occ[0][j] and i>1:
-                occ[i,j] = occ[i-1][j] +1 
-            elif occ[i][0] == occ[0][j] and i==1:
-                occ[i,j] = 1
-            elif occ[i][0] != occ[0][j] and i>1:
-                occ[i,j] = occ[i-1][j]
+    #fm_tables
+    cnt = Cnt(bwt_str)[0]
+    chars = Cnt(bwt_str)[1]
+    rank = Rank(bwt_str,chars,cnt)
+    occ = Occ(bwt_str,chars,cnt)
 
     ###  files
     bwtFile = textFile+".bwt"
@@ -116,10 +127,7 @@ def index(textFile):
     f.write(str(rank))
     f.write("\n")
     f.close()
-        
-    #return suffixArray, prep1, bwt_str, firstColumn
-    
-
+#%%
 def search(textFile,patternFile):
     fm = textFile+".fm"
     bwt = textFile+".bwt"
@@ -140,47 +148,74 @@ def search(textFile,patternFile):
             i+=1
             cnt += 1
             line = fp.readline()
-    
-    ### fm tables: cnt
-    cnt = dict()
-    cnt = {}
-    chars = ""
-    for i in bwt:
-        if not i in cnt:
-            cnt[i] = 1
-            chars += i
-        else:
-            cnt[i] += 1
-    chars = sorted(chars)
-    
-    ### fm tables: rank
-    rank = {}
-    i = 0
-    for j in chars:
-        rank[j] = i
-        i += cnt[j]
-    
-    ### fm tables: occ
-    occ = np.zeros((len(bwt)+1,len(cnt)+1), dtype=object)
-    for i in range(0,len(chars)):
-        occ[0][i+1] = chars[i]
-    for i in range(0,len(bwt)):
-        occ[i+1][0] = bwt[i]
-    
-    
-    for i in range(1,len(bwt)+1):
-        for j in range(1, len(chars)+1):
-            if occ[i][0] == occ[0][j] and i>1:
-                occ[i,j] = occ[i-1][j] +1 
-            elif occ[i][0] == occ[0][j] and i==1:
-                occ[i,j] = 1
-            elif occ[i][0] != occ[0][j] and i>1:
-                occ[i,j] = occ[i-1][j]
-    print("rank", rank)
-    print("cnt", cnt)
-    print("occ", occ)
-    print(indexTable)
 
+    #fm_tables
+    cnt = Cnt(bwt)[0]
+    chars = Cnt(bwt)[1]
+    rank = Rank(bwt,chars,cnt)
+    occ = Occ(bwt,chars,cnt)
+    occ = np.delete(occ,0,1)
+    occ = np.delete(occ,0,1)
+    occ = np.delete(occ,0,0)
+    print(occ)
+    #A = occ[0][1]
+    #C = occ[0][2]
+    #G = occ[0][3]
+    #T = occ[0][4]
+    
+    
+                
+    pattern = open(patternFile,"r")
+    pattern = pattern.read()
+
+    start = 1
+    end = len(bwt)-1
+    counter = 0
+    lst =[]
+    for i in pattern[::-1]:
+        if i == 'A':
+            start = int(rank[i]) + int(occ[start][0])
+            end = rank[i] + int(occ[end][0]-1)
+            counter+=1
+            if counter == len(pattern):
+                lst.append(start)
+                lst.append(end)
+        elif i == 'C':
+            start = rank[i] + int(occ[start-1][1])
+            end = rank[i] + int(occ[end][1] -1)
+            counter += 1
+            if counter == len(pattern):
+                lst.append(start)
+                lst.append(end)
+        elif i == 'G':
+            start = rank[i] + int(occ[start-1][2])
+            end = rank[i] + int(occ[end][2] -1)
+            counter += 1
+            if counter == len(pattern):
+                lst.append(start)
+                lst.append(end)
+        elif i == 'T':
+            start = rank[i] + int(occ[start-1][3])
+            end = rank[i] + int(occ[end][3] -1)
+            counter += 1
+            if counter == len(pattern):
+                lst.append(start)
+                lst.append(end)
+        else:
+            break
+    if counter == 0:
+        print("Given Pattern could not find")
+    elif counter >= len(pattern):
+        print("list:", lst)
+        print("counter:", counter)
+        
+        print("Pattern P found in T", len(lst)," times at positions:")
+        lineCount = 1
+        for i in lst:
+            print("pos", lineCount,": ", indexTable[i][1])
+            lineCount+=1
+
+    
 index("myText.fa")
 search("myText.fa","pattern.fa")
 
