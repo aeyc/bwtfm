@@ -157,7 +157,6 @@ def search(textFile,patternFile):
     occ = np.delete(occ,0,1)
     occ = np.delete(occ,0,1)
     occ = np.delete(occ,0,0)
-    print(occ)
     #A = occ[0][1]
     #C = occ[0][2]
     #G = occ[0][3]
@@ -171,51 +170,38 @@ def search(textFile,patternFile):
     start = 1
     end = len(bwt)-1
     counter = 0
-    lst =[]
+    
     for i in pattern[::-1]:
         if i == 'A':
             start = int(rank[i]) + int(occ[start][0])
             end = rank[i] + int(occ[end][0]-1)
             counter+=1
-            if counter == len(pattern):
-                lst.append(start)
-                lst.append(end)
+
         elif i == 'C':
             start = rank[i] + int(occ[start-1][1])
             end = rank[i] + int(occ[end][1] -1)
             counter += 1
-            if counter == len(pattern):
-                lst.append(start)
-                lst.append(end)
+
         elif i == 'G':
             start = rank[i] + int(occ[start-1][2])
             end = rank[i] + int(occ[end][2] -1)
             counter += 1
-            if counter == len(pattern):
-                lst.append(start)
-                lst.append(end)
+
         elif i == 'T':
             start = rank[i] + int(occ[start-1][3])
             end = rank[i] + int(occ[end][3] -1)
             counter += 1
-            if counter == len(pattern):
-                lst.append(start)
-                lst.append(end)
+
         else:
             break
     if counter == 0:
         print("Given Pattern could not find")
     elif counter >= len(pattern):
-        print("list:", lst)
-        print("counter:", counter)
-        
-        print("Pattern P found in T", len(lst)," times at positions:")
         lineCount = 1
-        for i in lst:
+        print("Pattern P found in T", end-start+1," times at positions:")
+        for i in range(start,end+1):
             print("pos", lineCount,": ", indexTable[i][1])
             lineCount+=1
-
-    
 index("myText.fa")
 search("myText.fa","pattern.fa")
 
